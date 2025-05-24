@@ -32,7 +32,7 @@ class RoleMiddleware
             return response()->json(['message' => 'Forbidden. Insufficient role.'], 403);
         }
 
-        // Optionally, set user to request for controller access
+    
         $request->merge(['auth_user' => $user]);
 
         return $next($request);

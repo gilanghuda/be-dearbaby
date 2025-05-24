@@ -75,12 +75,13 @@ class AuthController extends Controller
                 $user->api_token = $apiToken;
                 $user->save();
 
+                // Set api_token ke cookies (httpOnly)
                 return response()->json([
                     'message' => 'Login berhasil.',
                     'user' => $user,
                     'api_token' => $apiToken,
                     'status' => 'success'
-                ], 200);
+                ], 200)->cookie('api_token', $apiToken, 60 * 24 * 7, null, null, false, true); // 7 hari, httpOnly
             }
 
             return response()->json([

@@ -17,6 +17,8 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // 'throttle:api',
             // ...existing code...
         ],
     ];
@@ -27,8 +29,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        // ...existing code...
         'role' => \App\Http\Middleware\RoleMiddleware::class,
-        'auth' => \App\Http\Middleware\AuthMiddleware::class,
+        'CustomAuthMiddleware' => \App\Http\Middleware\CustomAuthMiddleware::class,
     ];
 }
