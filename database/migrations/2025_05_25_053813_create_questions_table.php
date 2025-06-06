@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('diaries', function (Blueprint $table) {
-            $table->id();
-            $table->text('message');
-            $table->enum('moodcheck', ['1', '2', '3', '4', '5', '6']);
-            $table->uuid('user_id');
+        Schema::create('questions', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('quiz_id');
+            $table->text('question_text');
             $table->timestamp('created_at')->useCurrent();
 
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+            $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('diaries');
+        Schema::dropIfExists('questions');
     }
 };

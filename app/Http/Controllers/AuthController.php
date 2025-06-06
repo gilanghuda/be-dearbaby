@@ -17,7 +17,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|email|unique:users,email',
-            'phone_number' => 'required|string|max:20',
+            'umur_kandungan' => 'required|string|max:255',
             'password' => 'required|string|min:6',
         ]);
 
@@ -31,9 +31,10 @@ class AuthController extends Controller
 
         try {
             $user = User::create([
+                'user_id' => \Illuminate\Support\Str::uuid()->toString(),
                 'username' => $request->username,
                 'email' => $request->email,
-                'phone_number' => $request->phone_number,
+                'umur_kandungan' => $request->umur_kandungan,
                 'password' => Hash::make($request->password), 
             ]);
 

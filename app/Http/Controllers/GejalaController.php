@@ -29,6 +29,14 @@ class GejalaController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        if (!$user || $user->family_role !== 'admin') {
+            return response()->json([
+                'message' => 'Hanya admin yang boleh menambah gejala.',
+                'status' => 'fail'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -53,6 +61,14 @@ class GejalaController extends Controller
 
     public function update(Request $request)
     {
+        $user = $request->user();
+        if (!$user || $user->family_role !== 'admin') {
+            return response()->json([
+                'message' => 'Hanya admin yang boleh mengubah gejala.',
+                'status' => 'fail'
+            ], 403);
+        }
+
         $id = $request->query('id');
         if (!$id) {
             return response()->json([
@@ -96,6 +112,14 @@ class GejalaController extends Controller
      */
     public function destroy(Request $request)
     {
+        $user = $request->user();
+        if (!$user || $user->family_role !== 'admin') {
+            return response()->json([
+                'message' => 'Hanya admin yang boleh menghapus gejala.',
+                'status' => 'fail'
+            ], 403);
+        }
+
         $id = $request->query('id');
         if (!$id) {
             return response()->json([

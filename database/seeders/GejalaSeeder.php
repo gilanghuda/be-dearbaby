@@ -12,14 +12,8 @@ class GejalaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Generate 10 data dummy menggunakan factory
+      
         Gejala::factory()->count(10)->create();
 
-        // Atau contoh manual:
-        // Gejala::create([
-        //     'title' => 'Demam',
-        //     'description' => 'Suhu tubuh meningkat di atas normal.',
-        //     'level' => 2,
-        // ]);
     }
 }
