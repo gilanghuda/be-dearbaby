@@ -8,7 +8,7 @@ use App\Http\Controllers\GejalaController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\QuizController;
 
-Route::get('/tes', function (Request $request) {
+Route::get('/', function (Request $request) {
     return response()->json(['message' => 'Server is running bro']);
 });
 

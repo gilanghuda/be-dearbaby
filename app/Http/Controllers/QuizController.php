@@ -21,13 +21,6 @@ class QuizController extends Controller
         return response()->json($quizzes);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -41,31 +34,33 @@ class QuizController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'question' => 'required|string',
-            'options' => 'required|array|min:2',
-            'options.*' => 'required|string',
-            'correctAnswer' => 'required|string',
+            'questions' => 'required|array|min:1',
+            'questions.*.question' => 'required|string',
+            'questions.*.options' => 'required|array|min:2',
+            'questions.*.options.*' => 'required|string',
+            'questions.*.correctAnswer' => 'required|string',
         ]);
         // Create quiz
         $quiz = Quiz::create([
-            'id' => (string) Str::uuid(),
+            'id' => (string) \Illuminate\Support\Str::uuid(),
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
         ]);
-        // Create question
-        $question = Question::create([
-            'id' => (string) Str::uuid(),
-            'quiz_id' => $quiz->id,
-            'question_text' => $validated['question'],
-        ]);
-        // Create options
-        foreach ($validated['options'] as $opt) {
-            Option::create([
-                'id' => (string) Str::uuid(),
-                'question_id' => $question->id,
-                'option_text' => $opt,
-                'is_correct' => $opt === $validated['correctAnswer'],
+        // Create questions and options
+        foreach ($validated['questions'] as $q) {
+            $question = Question::create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'quiz_id' => $quiz->id,
+                'question_text' => $q['question'],
             ]);
+            foreach ($q['options'] as $opt) {
+                Option::create([
+                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                    'question_id' => $question->id,
+                    'option_text' => $opt,
+                    'is_correct' => $opt === $q['correctAnswer'],
+                ]);
+            }
         }
         return response()->json(['message' => 'Quiz created', 'quiz' => $quiz], 201);
     }
@@ -173,12 +168,14 @@ class QuizController extends Controller
             ->orderByDesc('submitted_at')
             ->get()
             ->map(function ($a) {
+                $isComplete = $a->total_questions > 0 && ($a->score / $a->total_questions) >= 0.8;
                 return [
                     'quizId' => $a->quiz_id,
                     'title' => optional($a->quiz)->title,
                     'score' => $a->score,
                     'total' => $a->total_questions,
                     'date' => $a->submitted_at,
+                    'complete' => $isComplete,
                 ];
             });
         return response()->json($attempts);
