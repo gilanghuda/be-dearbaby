@@ -9,7 +9,31 @@ use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\QuizController;
 
 Route::get('/', function (Request $request) {
-    return response()->json(['message' => 'Server is running bro']);
+    return response()->json([
+        'title' => 'Project Akhir Pemlan',
+        'mahasiswa' => [
+            [
+                'nama' => 'Gilang Fachrul Huda',
+                'nim' => '205150207111034',
+                'role' => 'Backend Developer/product manager',
+            ],
+            [
+                'nama' => 'Rafi Ananta Nugraha',
+                'nim' => '235150200111035',
+                'role' => 'Frontend Developer/ui ux Designer',
+            ],
+            [
+                'nama' => 'Rachmat Thirdi Maliki',
+                'nim' => '235150200111032',
+                'role' => 'Frontend Developer/product manager',
+            ],
+            [
+                'nama' => 'M. Naufal Alfarizki',
+                'nim' => '235150207111032',
+                'role' => 'Frontend Developer/ui ux Designer',
+            ],
+        ]
+    ]);
 });
 
 Route::middleware([CustomAuthMiddleware::class])->group(function () {
@@ -23,8 +47,9 @@ Route::middleware([CustomAuthMiddleware::class])->group(function () {
         Route::post('auth/register', 'register');;
         Route::post('auth/login', 'login')->name('login'); 
         Route::post('auth/logout', 'logout');
-        Route::get('auth/current-user', 'currentUser');
+        Route::get('auth/current-user', 'currentUser')->middleware(CustomAuthMiddleware::class); 
         Route::put('auth/change-family-role', 'changeFamilyRole');
+        Route::post('auth/pair-family', 'pairFamily')->middleware(CustomAuthMiddleware::class); 
     });
 
 Route::controller(GejalaController::class)->group(function () {

@@ -132,16 +132,7 @@ class AuthController extends Controller
 
     public function currentUser(Request $request)
     {
-        $apiToken = $request->query('api_token'); 
-
-        if (!$apiToken) {
-            return response()->json([
-                'message' => 'API token wajib diisi.',
-                'status' => 'fail'
-            ], 400);
-        }
-
-        $user = User::where('api_token', $apiToken)->first();
+        $user = $request->user();
 
         if ($user) {
             return response()->json([
@@ -191,6 +182,63 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Family role berhasil diubah.',
             'user' => $user,
+            'status' => 'success'
+        ], 200);
+    }
+
+    public function pairFamily(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|uuid|exists:users,user_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Data tidak valid.',
+                'errors' => $validator->errors(),
+                'status' => 'fail'
+            ], 422);
+        }
+
+        $user = $request->user();
+        $target = User::where('user_id', $request->user_id)->first();
+
+        if (!$user || !$target) {
+            return response()->json([
+                'message' => 'User tidak ditemukan.',
+                'status' => 'fail'
+            ], 404);
+        }
+
+        if ($user->family_role === $target->family_role) {
+            return response()->json([
+                'message' => 'Tidak bisa pairing dengan family role yang sama.',
+                'status' => 'fail'
+            ], 422);
+        }
+
+        $roles = [$user->family_role, $target->family_role];
+        if (!in_array('ayah', $roles) || !in_array('ibu', $roles)) {
+            return response()->json([
+                'message' => 'Pairing hanya boleh antara ayah dan ibu.',
+                'status' => 'fail'
+            ], 422);
+        }
+
+
+        $familyId = $target->user_id;
+
+        $user->family_id = $familyId;
+        $user->save();
+
+        $target->family_id = $familyId;
+        $target->save();
+
+        return response()->json([
+            'message' => 'Pairing berhasil.',
+            'family_id' => $familyId,
+            'user_1' => $user,
+            'user_2' => $target,
             'status' => 'success'
         ], 200);
     }
