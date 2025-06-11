@@ -172,4 +172,23 @@ class DiaryController extends Controller
             ], 500);
         }
     }
+
+    public function getByUser(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User tidak terautentikasi.',
+                'status' => 'fail'
+            ], 401);
+        }
+
+        $diaries = Diary::where('user_id', $user->user_id)->get();
+
+        return response()->json([
+            'message' => 'Daftar diary user ditemukan.',
+            'status' => 'success',
+            'data' => $diaries
+        ], 200);
+    }
 }

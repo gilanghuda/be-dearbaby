@@ -44,12 +44,14 @@ Route::middleware([CustomAuthMiddleware::class])->group(function () {
 
 
    Route::controller(AuthController::class)->group(function () {
-        Route::post('auth/register', 'register');;
+        Route::post('auth/register', 'register');
         Route::post('auth/login', 'login')->name('login'); 
         Route::post('auth/logout', 'logout');
         Route::get('auth/current-user', 'currentUser')->middleware(CustomAuthMiddleware::class); 
         Route::put('auth/change-family-role', 'changeFamilyRole');
         Route::post('auth/pair-family', 'pairFamily')->middleware(CustomAuthMiddleware::class); 
+        Route::get('auth/count-parent-roles', 'countParentRoles'); 
+        Route::get('auth/list-users', 'listUsers'); 
     });
 
 Route::controller(GejalaController::class)->group(function () {
@@ -61,6 +63,7 @@ Route::controller(GejalaController::class)->group(function () {
 
 Route::controller(DiaryController::class)->group(function () {
     Route::get('diary/get-all', 'index')->middleware(CustomAuthMiddleware::class);
+    Route::get('diary/by-user', 'getByUser')->middleware(CustomAuthMiddleware::class);
     Route::post('diary/create', 'store')->middleware(CustomAuthMiddleware::class);
     Route::put('diary/edit', 'update')->middleware(CustomAuthMiddleware::class);
     Route::delete('diary/delete', 'destroy')->middleware(CustomAuthMiddleware::class);
@@ -72,4 +75,5 @@ Route::controller(QuizController::class)->group(function () {
     Route::post('quizzes', 'store')->middleware(CustomAuthMiddleware::class);
     Route::post('quizzes/{quizId}/submit', 'submit')->middleware(CustomAuthMiddleware::class);
     Route::get('quiz-history', 'history')->middleware(CustomAuthMiddleware::class);
+    Route::get('quizzes/progress', 'progress')->middleware(CustomAuthMiddleware::class); 
 });

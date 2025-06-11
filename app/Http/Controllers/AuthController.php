@@ -242,4 +242,21 @@ class AuthController extends Controller
             'status' => 'success'
         ], 200);
     }
+
+    public function countParentRoles()
+    {
+        $ayah = User::where('family_role', 'ayah')->count();
+        $ibu = User::where('family_role', 'ibu')->count();
+
+        return response()->json([
+            'ayah' => $ayah,
+            'ibu' => $ibu,
+        ]);
+    }
+
+    public function listUsers()
+    {
+        $users = User::select('user_id', 'username', 'email', 'umur_kandungan', 'family_role', 'family_id')->get();
+        return response()->json($users);
+    }
 }
