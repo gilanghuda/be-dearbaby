@@ -125,12 +125,13 @@ class QuizController extends Controller
             'answers.*.selectedOption' => 'required|string',
         ]);
         $attempt = Attempt::create([
-            'id' => (string) Str::uuid(),
+            'id' => (string) \Illuminate\Support\Str::uuid(),
             'user_id' => $user->user_id,
             'quiz_id' => $quizId,
             'score' => 0,
             'total_questions' => count($validated['answers']),
             'submitted_at' => now(),
+            // 'is_complete' will be set after scoring
         ]);
         $score = 0;
         foreach ($validated['answers'] as $ans) {
@@ -140,7 +141,7 @@ class QuizController extends Controller
             $isCorrect = $option && $option->is_correct;
             if ($isCorrect) $score++;
             Answer::create([
-                'id' => (string) Str::uuid(),
+                'id' => (string) \Illuminate\Support\Str::uuid(),
                 'attempt_id' => $attempt->id,
                 'question_id' => $question->id,
                 'selected_option_id' => $option ? $option->id : null,
@@ -148,11 +149,14 @@ class QuizController extends Controller
             ]);
         }
         $attempt->score = $score;
+        $isComplete = $attempt->total_questions > 0 && ($score / $attempt->total_questions) >= 0.8;
+        $attempt->is_complete = $isComplete;
         $attempt->save();
         return response()->json([
             'message' => 'Quiz submitted',
             'score' => $score,
             'total' => $attempt->total_questions,
+            'is_complete' => $isComplete,
         ]);
     }
 
@@ -175,11 +179,52 @@ class QuizController extends Controller
                     'score' => $a->score,
                     'total' => $a->total_questions,
                     'date' => $a->submitted_at,
-                    'complete' => $isComplete,
+                    'complete' => $a->is_complete ? 'yes' : 'no',
                 ];
             });
         return response()->json($attempts);
     }
 
-  
+    // Get user's quiz completion progress
+    public function progress(Request $request)
+    {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            $totalQuizzes = Quiz::count();
+            if ($totalQuizzes === 0) {
+                return response()->json([
+                    'progress' => 0,
+                    'completed' => 0,
+                    'total' => 0,
+                    'message' => 'No quizzes available.'
+                ]);
+            }
+
+            $completedQuizIds = Attempt::where('user_id', $user->user_id)
+                ->where('is_complete', true)
+                ->select('quiz_id')
+                ->distinct()
+                ->get()
+                ->pluck('quiz_id');
+
+            $completedCount = $completedQuizIds->count();
+            $progress = round(($completedCount / $totalQuizzes) * 100, 2);
+
+            return response()->json([
+                'progress' => $progress,
+                'completed' => $completedCount,
+                'total' => $totalQuizzes,
+                'message' => 'Quiz completion progress calculated.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Internal server error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

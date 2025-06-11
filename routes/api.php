@@ -71,9 +71,9 @@ Route::controller(DiaryController::class)->group(function () {
 
 Route::controller(QuizController::class)->group(function () {
     Route::get('quizzes', 'index');
+    Route::get('quizzes/user/progress', 'progress')->middleware(CustomAuthMiddleware::class); 
     Route::get('quizzes/{id}', 'show');
     Route::post('quizzes', 'store')->middleware(CustomAuthMiddleware::class);
     Route::post('quizzes/{quizId}/submit', 'submit')->middleware(CustomAuthMiddleware::class);
     Route::get('quiz-history', 'history')->middleware(CustomAuthMiddleware::class);
-    Route::get('quizzes/progress', 'progress')->middleware(CustomAuthMiddleware::class); 
 });
