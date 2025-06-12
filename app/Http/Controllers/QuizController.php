@@ -121,9 +121,21 @@ class QuizController extends Controller
         }
         $validated = $request->validate([
             'answers' => 'required|array|min:1',
-            'answers.*.questionId' => 'required|string|exists:questions,id',
+            'answers.*.questionId' => 'required|string',
             'answers.*.selectedOption' => 'required|string',
         ]);
+
+        $questionIds = collect($validated['answers'])->pluck('questionId')->all();
+        $existingQuestionIds = \App\Models\Question::whereIn('id', $questionIds)->pluck('id')->all();
+        $invalidIds = array_diff($questionIds, $existingQuestionIds);
+        if (!empty($invalidIds)) {
+            return response()->json([
+                'message' => 'Invalid questionId(s) found.',
+                'invalid_question_ids' => array_values($invalidIds),
+                'status' => 'fail'
+            ], 400);
+        }
+
         $attempt = Attempt::create([
             'id' => (string) \Illuminate\Support\Str::uuid(),
             'user_id' => $user->user_id,
@@ -131,7 +143,6 @@ class QuizController extends Controller
             'score' => 0,
             'total_questions' => count($validated['answers']),
             'submitted_at' => now(),
-            // 'is_complete' will be set after scoring
         ]);
         $score = 0;
         foreach ($validated['answers'] as $ans) {

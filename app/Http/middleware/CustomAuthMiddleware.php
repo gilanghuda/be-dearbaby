@@ -14,12 +14,12 @@ class CustomAuthMiddleware
         try{   
         $apiToken = $request->cookie('api_token');
                 if (!$apiToken) {
-                    return response()->json(['message' => 'API token is required.'], 401);
+                    return response()->json([`message' => 'API token is required =${apiToken}`], 401);
                 } 
 
                 $user = User::where('api_token', $apiToken)->first();
                 if (!$user) {
-                    return response()->json(['message' => 'Invalid API token.'], 401);
+                    return response()->json(['message' => `Invalid API token. = ${apiToken}`], 401);
                 }
                 $request->merge(['auth_user' => $user]);
                 $request->setUserResolver(fn() => $user);

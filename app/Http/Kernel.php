@@ -12,16 +12,13 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewareGroups = [
-        'web' => [
-            // ...existing code...
-        ],
+    'api' => [
+        \Illuminate\Http\Middleware\HandleCors::class,
+        'throttle:api',
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ],
+];
 
-        'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            // 'throttle:api',
-            // ...existing code...
-        ],
-    ];
 
     /**
      * The application's route middleware.
@@ -29,7 +26,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
         'CustomAuthMiddleware' => \App\Http\Middleware\CustomAuthMiddleware::class,
     ];
 }
