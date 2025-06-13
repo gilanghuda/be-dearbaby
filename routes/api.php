@@ -46,7 +46,7 @@ Route::middleware([CustomAuthMiddleware::class])->group(function () {
    Route::controller(AuthController::class)->group(function () {
         Route::post('auth/register', 'register');
         Route::post('auth/login', 'login')->name('login'); 
-        Route::post('auth/logout', 'logout');
+        Route::post('auth/logout', 'logout')->middleware(CustomAuthMiddleware::class);
         Route::get('auth/current-user', 'currentUser')->middleware(CustomAuthMiddleware::class); 
         Route::put('auth/change-family-role', 'changeFamilyRole');
         Route::post('auth/pair-family', 'pairFamily')->middleware(CustomAuthMiddleware::class); 
@@ -75,5 +75,7 @@ Route::controller(QuizController::class)->group(function () {
     Route::get('quizzes/{id}', 'show');
     Route::post('quizzes/create', 'store')->middleware(CustomAuthMiddleware::class);
     Route::post('quizzes/{quizId}/submit', 'submit')->middleware(CustomAuthMiddleware::class);
+    Route::put('quizzes/update', 'update')->middleware(CustomAuthMiddleware::class);
+    Route::delete('quizzes/delete', 'destroy')->middleware(CustomAuthMiddleware::class);
     Route::get('quiz-history', 'history')->middleware(CustomAuthMiddleware::class);
 });

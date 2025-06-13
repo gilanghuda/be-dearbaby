@@ -99,17 +99,76 @@ class QuizController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Quiz $quiz)
+    public function update(Request $request)
     {
-        //
+        $user = $request->user();
+        $id = $request->query('id');
+        if (!$user || $user->family_role !== 'admin') {
+            return response()->json(['message' => 'Only admin can update quiz'], 403);
+        }
+        $quiz = Quiz::where('id', $id)->first();
+        if (!$quiz) {
+            return response()->json(['message' => 'Quiz not found'], 404);
+        }
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'questions' => 'required|array|min:1',
+            'questions.*.question' => 'required|string',
+            'questions.*.options' => 'required|array|min:2',
+            'questions.*.options.*' => 'required|string',
+            'questions.*.correctAnswer' => 'required|string',
+        ]);
+        
+        $quiz->title = $validated['title'];
+        $quiz->description = $validated['description'] ?? null;
+        $quiz->save();
+
+        $oldQuestions = Question::where('quiz_id', $quiz->id)->get();
+        foreach ($oldQuestions as $q) {
+            Option::where('question_id', $q->id)->delete();
+            $q->delete();
+        }
+
+        foreach ($validated['questions'] as $q) {
+            $question = Question::create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'quiz_id' => $quiz->id,
+                'question_text' => $q['question'],
+            ]);
+            foreach ($q['options'] as $opt) {
+                Option::create([
+                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                    'question_id' => $question->id,
+                    'option_text' => $opt,
+                    'is_correct' => $opt === $q['correctAnswer'],
+                ]);
+            }
+        }
+        return response()->json(['message' => 'Quiz updated', 'quiz' => $quiz]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Quiz $quiz)
+    public function destroy(Request $request)
     {
-        //
+        $user = $request->user();
+        $id = $request->query('id');
+        if (!$user || $user->family_role !== 'admin') {
+            return response()->json(['message' => 'Only admin can delete quiz'], 403);
+        }
+        $quiz = Quiz::where('id', $id)->first();
+        if (!$quiz) {
+            return response()->json(['message' => 'Quiz not found'], 404);
+        }
+        $questions = Question::where('quiz_id', $quiz->id)->get();
+        foreach ($questions as $q) {
+            Option::where('question_id', $q->id)->delete();
+            $q->delete();
+        }
+        $quiz->delete();
+        return response()->json(['message' => 'Quiz deleted']);
     }
 
     // Submit answers to a quiz
@@ -126,7 +185,7 @@ class QuizController extends Controller
         ]);
 
         $questionIds = collect($validated['answers'])->pluck('questionId')->all();
-        $existingQuestionIds = \App\Models\Question::whereIn('id', $questionIds)->pluck('id')->all();
+        $existingQuestionIds = Question::whereIn('id', $questionIds)->pluck('id')->all();
         $invalidIds = array_diff($questionIds, $existingQuestionIds);
         if (!empty($invalidIds)) {
             return response()->json([

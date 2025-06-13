@@ -14,7 +14,7 @@ class CustomAuthMiddleware
         try{   
         $apiToken = $request->cookie('api_token');
                 if (!$apiToken) {
-                    return response()->json([`message' => 'API token is required =${apiToken}`], 401);
+                    return response()->json(['message' => 'API token is required ='], 401);
                 } 
 
                 $user = User::where('api_token', $apiToken)->first();

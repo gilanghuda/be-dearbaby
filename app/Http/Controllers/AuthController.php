@@ -102,16 +102,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $apiToken = $request->query('api_token');
-
-        if (!$apiToken) {
-            return response()->json([
-                'message' => 'API token wajib diisi.',
-                'status' => 'fail'
-            ], 400);
-        }
-
-        $user = User::where('api_token', $apiToken)->first();
+        $user = $request->user();
 
         if ($user) {
             $user->api_token = null;
