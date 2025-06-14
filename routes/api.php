@@ -14,7 +14,7 @@ Route::get('/', function (Request $request) {
         'mahasiswa' => [
             [
                 'nama' => 'Gilang Fachrul Huda',
-                'nim' => '205150207111034',
+                'nim' => '235150207111034',
                 'role' => 'Backend Developer/product manager',
             ],
             [
